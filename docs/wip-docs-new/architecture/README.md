@@ -45,6 +45,10 @@ In addition, the EPP can also query "consultant" components which can execute ar
 - [Latency Predictor](advanced/latency-predictor.md), which trains an XGBoost model online (using measured latency of previous requests) for scheduling decisions
 - [KV-Cache Indexer](advanced/kv-indexer.md), which maintains a globally consistent view of each Model Server's KV cache state (which can outperform the EPP's approximated view for multi-modal and hybrid models) that can be used as a scorer (in place of the approximated one built into the EPP)
 
+### Batch Processing
+
+- [Batch Gateway](advanced/batch-gateway.md), which provides an OpenAI-compatible Batch API for submitting, tracking, and managing large-scale batch inference jobs, enabling efficient processing of batch workloads coexisting with interactive workloads on shared infrastructure.
+
 ### Autoscaling
 
 - TO BE UPDATED
