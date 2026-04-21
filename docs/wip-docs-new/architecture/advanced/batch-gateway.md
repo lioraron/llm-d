@@ -7,24 +7,24 @@ Batch Gateway adds OpenAI-compatible batch inference processing to the llm-d sta
 Batch Gateway consists of three independently deployable binaries:
 
 ```text
-                     ┌─────────────────────────┐
+                     ┌──────────────────────────┐
                      │   batch-gateway-apiserver│
   Client ──REST──►   │   /v1/batches, /v1/files │
-                     └────────┬────────────────┘
+                     └────────┬─────────────────┘
                               │ metadata + queue + files
-                     ┌────────▼────────────────┐
+                     ┌────────▼─────────────────┐
                      │      Data Layer          │
                      │  PostgreSQL │ Redis │ S3 │
-                     └────────┬────────────────┘
+                     └────────┬─────────────────┘
                               │ poll
-                     ┌────────▼────────────────┐
+                     ┌────────▼─────────────────┐
                      │ batch-gateway-processor  │──inference──► Inference Gateway ──► Model Servers
                      │  workers + dispatcher    │
                      └──────────────────────────┘
 
-                     ┌──────────────────────────┐
+                     ┌───────────────────────────┐
                      │   batch-gateway-gc        │  (periodic cleanup of expired jobs/files)
-                     └──────────────────────────┘
+                     └───────────────────────────┘
 ```
 
 ### API Server
@@ -61,16 +61,6 @@ The processor uses a two-level semaphore to prevent overloading the inference ga
 #### Crash Recovery
 
 On startup, the processor scans for jobs that were `in_progress` when a previous instance crashed. It re-processes these jobs from the beginning, skipping requests whose results already exist in the output file. Recovery concurrency is separately capped (`recoveryMaxConcurrency`) to avoid overwhelming the system during restart storms.
-
-### Flow Control (Batch Dispatcher)
-
-The processor integrates with llm-d's flow control system to coexist with interactive traffic:
-
-- **Inference Objective** — the processor can tag requests with an `inferenceObjective` header, allowing the inference gateway's EPP to classify batch traffic into a lower priority band.
-- **Downstream monitoring** — the processor can monitor inference system metrics (queue depth, latency, utilization) and dynamically adjust the dispatch volume of batch requests.
-- **Backpressure** — when the inference system is saturated, the processor reduces or pauses batch dispatch, resuming when capacity becomes available.
-
-This ensures batch workloads fill idle capacity without degrading interactive request latency.
 
 ### Garbage Collector
 

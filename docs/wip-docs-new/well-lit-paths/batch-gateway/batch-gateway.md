@@ -16,7 +16,7 @@ Pick it when:
 Skip it when:
 
 - Your workload needs **real-time or low-latency responses** — use the inference gateway directly.
-- You need **individual async request/response** without the concept of batch jobs — consider [Asynchronous Processing](../../well-lit-paths/asynchronous-processing.md) instead.
+- You need **individual async request/response** without the concept of batch jobs — consider [Asynchronous Processing](../../../../guides/asynchronous-processing/README.md) instead.
 
 ## Prerequisites
 
@@ -116,7 +116,7 @@ Once jobs are flowing, confirm three things in Prometheus:
 
 1. **Jobs are being processed.** `jobs_processed_total{result="success"}` is incrementing. If it stays at zero, check the processor logs for queue connectivity or inference gateway errors.
 2. **Queue wait time is acceptable.** `job_queue_wait_duration_seconds` should be within your SLO. High values indicate the processor can't keep up — increase `replicaCount` or `globalConcurrency`.
-3. **Inference requests are succeeding.** `batch_request_duration_seconds` shows healthy latency distribution. Check `batch_request_errors_total` for failures.
+3. **Inference requests are succeeding.** `model_request_execution_duration_seconds{model}` shows healthy latency distribution. Check `request_errors_by_model_total{model}` for failures.
 
 Pre-built Grafana dashboards are included in the Helm chart — enable with `grafana.dashboards.enabled=true`.
 

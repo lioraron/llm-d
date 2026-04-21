@@ -82,7 +82,8 @@ export INFERENCE_GW_URL="http://infra-inference-scheduling-inference-gateway-ist
 helm install batch-gateway oci://ghcr.io/llm-d-incubation/charts/batch-gateway \
   -n ${NAMESPACE} \
   --set processor.config.globalInferenceGateway.url="${INFERENCE_GW_URL}" \
-  --set "apiserver.config.batchAPI.passThroughHeaders={Authorization}"
+  --set "apiserver.config.batchAPI.passThroughHeaders={Authorization}" \
+  --set global.fileClient.fs.pvcName="batch-gateway-pvc"
 ```
 
 **From Source:**
@@ -91,7 +92,8 @@ helm install batch-gateway oci://ghcr.io/llm-d-incubation/charts/batch-gateway \
 helm install batch-gateway ./charts/batch-gateway \
   -n ${NAMESPACE} \
   --set processor.config.globalInferenceGateway.url="${INFERENCE_GW_URL}" \
-  --set "apiserver.config.batchAPI.passThroughHeaders={Authorization}"
+  --set "apiserver.config.batchAPI.passThroughHeaders={Authorization}" \
+  --set global.fileClient.fs.pvcName="batch-gateway-pvc"
 ```
 
 > **Note**: `passThroughHeaders` should include any authentication headers (e.g., `Authorization`) that the inference gateway expects. The processor forwards these headers when dispatching individual inference requests.
@@ -109,8 +111,8 @@ helm install batch-gateway ./charts/batch-gateway \
 2. Verify health endpoints:
 
    ```bash
-   kubectl port-forward -n ${NAMESPACE} svc/batch-gateway-apiserver 8000:8000 &
-   curl http://localhost:8000/health
+   kubectl port-forward -n ${NAMESPACE} svc/batch-gateway-apiserver 8081:8081 &
+   curl http://localhost:8081/health
    ```
 
 ## Usage
@@ -128,7 +130,6 @@ Upload the file:
 
 ```bash
 curl -X POST http://localhost:8000/v1/files \
-  -H "Authorization: Bearer <token>" \
   -F "purpose=batch" \
   -F "file=@batch_input.jsonl"
 ```
@@ -137,7 +138,6 @@ curl -X POST http://localhost:8000/v1/files \
 
 ```bash
 curl -X POST http://localhost:8000/v1/batches \
-  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "input_file_id": "<file-id-from-upload>",
@@ -149,8 +149,7 @@ curl -X POST http://localhost:8000/v1/batches \
 ### Monitor Job Status
 
 ```bash
-curl -H "Authorization: Bearer <token>" \
-  http://localhost:8000/v1/batches/<batch-id> | jq '{status, request_counts}'
+curl http://localhost:8000/v1/batches/<batch-id> | jq '{status, request_counts}'
 ```
 
 ### Download Results
@@ -159,12 +158,11 @@ Once the job status is `completed`, retrieve the output file:
 
 ```bash
 # Get the output file ID
-OUTPUT_FILE_ID=$(curl -s -H "Authorization: Bearer <token>" \
+OUTPUT_FILE_ID=$(curl -s \
   http://localhost:8000/v1/batches/<batch-id> | jq -r '.output_file_id')
 
 # Download the results
-curl -H "Authorization: Bearer <token>" \
-  http://localhost:8000/v1/files/${OUTPUT_FILE_ID}/content > results.jsonl
+curl http://localhost:8000/v1/files/${OUTPUT_FILE_ID}/content > results.jsonl
 ```
 
 ## Cleanup
