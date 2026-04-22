@@ -45,7 +45,7 @@ Should your use case require it, the EPP can optionally query 'consultant' compo
 
 ### Batch Processing
 
-- [Batch Gateway](advanced/batch-gateway.md), which provides an OpenAI-compatible Batch API for submitting, tracking, and managing large-scale batch inference jobs, enabling efficient processing of batch workloads coexisting with interactive workloads on shared infrastructure.
+- [Batch Processing](advanced/batch/README.md) — offline and asynchronous inference components, including [Batch Gateway](advanced/batch/batch-gateway.md) for OpenAI-compatible batch job management and [Async Processor](advanced/batch/async-processor.md) for queue-based flow-control-aware request dispatching.
 
 ### Autoscaling
 

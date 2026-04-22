@@ -2,7 +2,7 @@
 
 Process large-scale batch inference jobs via an OpenAI-compatible API — decoupled from real-time serving, with intelligent flow control that fills idle capacity without impacting interactive workloads.
 
-This path is for operators who want to **adopt** batch inference processing in an existing llm-d deployment. For the deployment guide and Helm chart details, see the [guides/batch-gateway](../../../../guides/batch-gateway/README.md). For the architecture and internals, see [architecture/advanced/batch-gateway.md](../../architecture/advanced/batch-gateway.md).
+This path is for operators who want to **adopt** batch inference processing in an existing llm-d deployment. For the deployment guide and Helm chart details, see the [guides/batch-gateway](../../../../guides/batch-gateway/README.md). For the architecture and internals, see [architecture/advanced/batch](../../architecture/advanced/batch/batch-gateway.md).
 
 ## When to Pick This Path
 
@@ -130,6 +130,6 @@ Pre-built Grafana dashboards are included in the Helm chart — enable with `gra
 
 ## Related
 
-- [Batch Gateway Architecture](../../architecture/advanced/batch-gateway.md) — components, data flow, flow control, and processing pipeline.
+- [Batch Gateway Architecture](../../architecture/advanced/batch/batch-gateway.md) — components, data flow, and processing pipeline.
 - [Batch Gateway Repository](https://github.com/llm-d-incubation/batch-gateway) — source code, Helm chart, platform-specific deployment guides, and demo scripts.
 - [Asynchronous Processing](../../../../guides/asynchronous-processing/README.md) — complementary queue-based async inference for individual requests.
