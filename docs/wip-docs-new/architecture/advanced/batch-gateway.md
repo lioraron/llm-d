@@ -81,6 +81,6 @@ The batch route authenticates (verifying identity), while the inference route au
 
 ## Related
 
-- [Batch Gateway Well-Lit Path](../../well-lit-paths/batch-gateway/batch-gateway.md) — operator guide for deploying and configuring Batch Gateway.
+- [Batch Gateway Guide](../../guides/experimental/batch-gateway.md) — operator guide for deploying and configuring Batch Gateway.
 - [Batch Gateway Repository](https://github.com/llm-d-incubation/batch-gateway) — source code, Helm chart, and platform-specific deployment guides.
 - [Batch Gateway Design Documents](https://github.com/llm-d-incubation/batch-gateway/tree/main/docs/design) — detailed design documents.

@@ -89,13 +89,11 @@ Upload an input file and create a batch job:
 ```bash
 # Upload input file (JSONL format)
 FILE_ID=$(curl -s -X POST http://<apiserver>/v1/files \
-  -H "Authorization: Bearer <token>" \
   -F "purpose=batch" \
   -F "file=@batch_input.jsonl" | jq -r '.id')
 
 # Create batch job
 BATCH_ID=$(curl -s -X POST http://<apiserver>/v1/batches \
-  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d "{
     \"input_file_id\": \"${FILE_ID}\",
@@ -104,8 +102,7 @@ BATCH_ID=$(curl -s -X POST http://<apiserver>/v1/batches \
   }" | jq -r '.id')
 
 # Check status
-curl -s -H "Authorization: Bearer <token>" \
-  http://<apiserver>/v1/batches/${BATCH_ID} | jq '{status, request_counts}'
+curl -s http://<apiserver>/v1/batches/${BATCH_ID} | jq '{status, request_counts}'
 ```
 
 The expected job status flow is: `validating` → `in_progress` → `finalizing` → `completed`.
