@@ -1,31 +1,8 @@
 # Batch Gateway Architecture
 
-Batch Gateway adds OpenAI-compatible batch inference processing to the llm-d stack. It sits between batch API clients and the inference gateway, managing the lifecycle of batch jobs — from file upload through request dispatching to result collection.
+Batch Gateway adds OpenAI-compatible batch inference processing to the llm-d stack. It sits between batch API clients and the inference gateway, managing the lifecycle of batch jobs — from job creation through request dispatching to result collection.
 
-## Components
-
-Batch Gateway consists of three independently deployable binaries:
-
-```text
-                     ┌──────────────────────────┐
-                     │   batch-gateway-apiserver│
-  Client ──REST──►   │   /v1/batches, /v1/files │
-                     └────────┬─────────────────┘
-                              │ metadata + queue + files
-                     ┌────────▼─────────────────┐
-                     │      Data Layer          │
-                     │  PostgreSQL │ Redis │ S3 │
-                     └────────┬─────────────────┘
-                              │ poll
-                     ┌────────▼─────────────────┐
-                     │ batch-gateway-processor  │──inference──► Inference Gateway ──► Model Servers
-                     │  workers + dispatcher    │
-                     └──────────────────────────┘
-
-                     ┌───────────────────────────┐
-                     │   batch-gateway-gc        │  (periodic cleanup of expired jobs/files)
-                     └───────────────────────────┘
-```
+![Batch Gateway Architecture](../../../assets/batch-gateway.svg)
 
 ### API Server
 
@@ -83,35 +60,6 @@ All three components share a pluggable data layer:
 | Event channels | Redis | Pub/Sub for job cancellation and status |
 | Status updates | Redis | Progress tracking with TTL |
 | File storage | S3, Filesystem | S3 for multi-replica deployments; filesystem (PVC) for single-node |
-
-## Processing Pipeline
-
-```text
-Input File (JSONL)
-    │
-    ▼
-┌─────────────┐    ┌─────────────────────────────────┐
-│  Parse &    │    │  Per-Model Execution Plans       │
-│  Group by   │───►│  model-a.plan  model-b.plan  ...│
-│  Model      │    └──────────┬──────────────────────┘
-└─────────────┘               │
-                              ▼
-                   ┌─────────────────────┐
-                   │  Concurrent Workers  │
-                   │  (global + per-model │
-                   │   semaphores)        │
-                   └──────────┬──────────┘
-                              │
-                   ┌──────────▼──────────┐
-                   │  Inference Gateway   │
-                   │  (per-request HTTP)  │
-                   └──────────┬──────────┘
-                              │
-                   ┌──────────▼──────────┐
-                   │  Output File (JSONL) │
-                   │  + Status Updates    │
-                   └─────────────────────┘
-```
 
 ## Authentication and Multi-Tenancy
 
