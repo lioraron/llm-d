@@ -22,7 +22,7 @@ Skip it when:
 
 - A working Inference Gateway, `InferencePool`, and at least one model server. If you don't have this, start with [getting-started/quickstart.md](../../getting-started/quickstart.md).
 - PostgreSQL (12+) and Redis (6+) accessible from the cluster.
-- S3-compatible storage or a shared PVC for batch input/output files.
+- S3-compatible storage or a shared PVC with `ReadWriteMany` (RWX) access mode for batch input/output files.
 - Helm 3.0+.
 
 ## Deploy
@@ -53,7 +53,7 @@ The processor forwards headers listed in `passThroughHeaders` with every inferen
 
 ### Per-Model Routing
 
-If different models are served by different gateways, use `modelGateways` instead of `globalInferenceGateway`:
+If different models are served by different gateways, configure `modelGateways` instead of `globalInferenceGateway` in the Helm chart `values.yaml`:
 
 ```yaml
 processor:
