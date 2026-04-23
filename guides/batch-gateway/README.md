@@ -25,7 +25,7 @@ Batch Gateway uses pluggable storage backends. Each function is backed by a sing
 
 | Function | Available plug-ins |
 |----------|-------------------|
-| Jobs and files metadata | PostgreSQL, Redis |
+| Jobs and files metadata | PostgreSQL, Redis (development/test only) |
 | Priority queue, events, status updates | Redis |
 | File storage (input/output) | S3, Filesystem |
 
@@ -38,7 +38,7 @@ Before installing Batch Gateway, ensure you have:
    - For production, GKE, AKS, or OpenShift are supported.
 2. **Helm**: 3.0+
 3. **llm-d Inference Stack**: Batch Gateway requires an existing [Intelligent Inference Scheduling](../inference-scheduling/README.md) stack to dispatch requests to.
-4. **PostgreSQL**: 12+ for metadata storage (or Redis as an alternative).
+4. **PostgreSQL**: 12+ for metadata storage (Redis is available as an alternative for development/test only).
 5. **Redis**: 6+ for priority queue, events, and status updates.
 6. **S3 or Filesystem**: For batch input and output file storage.
 

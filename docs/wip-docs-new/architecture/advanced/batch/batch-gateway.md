@@ -17,7 +17,7 @@ The API server exposes OpenAI-compatible REST endpoints:
 - `POST /v1/batches/{id}/cancel` — Cancel a running job.
 - `GET /v1/batches` — List batch jobs.
 
-The API server validates input files, stores metadata in PostgreSQL (or Redis), enqueues jobs into a Redis priority queue, and stores files in S3 or a filesystem.
+The API server validates input files, stores metadata in PostgreSQL (or Redis for development/test), enqueues jobs into a Redis priority queue, and stores files in S3 or a filesystem.
 
 ### Batch Processor
 
@@ -55,7 +55,7 @@ All three components share a pluggable data layer:
 
 | Function | Options | Notes |
 |----------|---------|-------|
-| Jobs and files metadata | PostgreSQL, Redis | PostgreSQL recommended for production |
+| Jobs and files metadata | PostgreSQL, Redis | PostgreSQL for production; Redis for development/test only |
 | Priority queue | Redis | Sorted set with deadline-based priority |
 | Event channels | Redis | Pub/Sub for job cancellation and status |
 | Status updates | Redis | Progress tracking with TTL |
