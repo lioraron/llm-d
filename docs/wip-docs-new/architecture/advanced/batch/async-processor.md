@@ -1,6 +1,6 @@
 # Async Processor Architecture
 
-The Async Processor is a lightweight dispatch agent that pulls inference requests from message queues and forwards them to the Inference Gateway. It uses flow-control gates to regulate dispatch rate based on system metrics, ensuring that the dispatched workloads don't overflow the inference servers.
+The Async Processor is a lightweight dispatch agent that pulls inference requests from message queues and forwards them to the Inference Gateway. It uses dispatch gates to regulate dispatch rate based on system metrics, ensuring that the dispatched workloads don't overflow the inference servers.
 
 ## How It Works
 
@@ -11,7 +11,7 @@ The Async Processor is a lightweight dispatch agent that pulls inference request
 
 ## Dispatch Gates
 
-The dispatch gate controls the rate by which the processor sends requests. Each queue can have its own gate, allowing independent flow control per workload.
+The dispatch gate controls the rate by which the processor sends requests. Each queue can have its own gate, allowing independent dispatch control per workload.
 
 | Gate type | Behavior |
 |-----------|----------|
@@ -20,7 +20,7 @@ The dispatch gate controls the rate by which the processor sends requests. Each 
 | `prometheus-saturation` | Queries Prometheus for model server saturation metrics. Dispatches when saturation is below a configurable threshold. |
 | `prometheus-budget` | Computes available capacity from downstream metrics. |
 
-## Queue Implementations
+## Message Queue Integrations
 
 | Implementation | Characteristics |
 |---------------|-----------------|

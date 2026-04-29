@@ -41,9 +41,9 @@ The processor uses two-level concurrency control to prevent overloading the infe
 
 On startup, the processor scans for jobs that were `in_progress` when a previous instance crashed. If a partial output file exists, the processor uploads it and marks the job as failed. Otherwise, the job is re-enqueued for a full retry. Recovery concurrency is capped to avoid overwhelming the system during restart storms.
 
-## Data Layer
+## Storage Layer
 
-All Batch Gateway components share a pluggable data layer:
+All Batch Gateway components share a pluggable storage layer:
 
 | Function | Options | Notes |
 |----------|---------|-------|

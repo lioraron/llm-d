@@ -17,7 +17,7 @@
 2. **Batch Processor** — Pulls jobs from a priority queue, builds per-model execution plans, dispatches inference requests to the inference gateway, and writes results to output files.
 3. **Garbage Collector** — Cleans up expired jobs and files.
 
-### Data Layer
+### Storage Layer
 
 Batch Gateway uses pluggable storage backends. Each function is backed by a single plug-in, chosen at deployment time:
 
