@@ -1,23 +1,21 @@
 # Experimental Feature: Batch Gateway
 
-[Batch Gateway](https://github.com/llm-d-incubation/batch-gateway) provides an OpenAI-compatible Batch API for submitting, tracking, and managing large-scale batch inference jobs. It is designed to process batch workloads alongside interactive traffic, minimizing interference with real-time requests while meeting batch jobs' SLOs.
+[Batch Gateway](https://github.com/llm-d-incubation/batch-gateway) provides an OpenAI-compatible Batch API for submitting, tracking, and managing large-scale batch inference jobs. It is designed to efficiently process batch workloads alongside interactive workloads on shared infrastructure.
 
 ## Overview
 
-Batch Gateway integrates with llm-d to:
+### Key Features
 
-- **Provide an OpenAI-compatible API**: Full schema parity with OpenAI's `/v1/batches` and `/v1/files` endpoints.
-- **Process large-scale batch jobs**: Support for up to 50,000 requests per job, with progress tracking and job management.
-- **Optimize resource utilization**: Intelligent flow control monitors downstream metrics and adjusts batch dispatch volume to fill idle capacity without impacting interactive workloads.
+- **Process large-scale batch jobs**: Process batch jobs with up to 50,000 (configurable) inference requests per job, with progress tracking and job management capabilities.
+- **Provide an OpenAI-compatible Batch API**: Full schema parity with OpenAI's `/v1/batches` and `/v1/files` endpoints.
+- **Optimize resource utilization**: Enables batch and interactive workloads to coexist on shared infrastructure. Integrates with flow control mechanisms to adjust the batch dispatch rate based on downstream metrics.
 - **Multi-tenant isolation**: Per-tenant data isolation with pluggable authentication and authorization.
 
 ### Components
 
-Batch Gateway consists of three independently scalable components:
-
-1. **API Server** (`batch-gateway-apiserver`) — REST API for batch job submission, management, tracking, and file management.
-2. **Batch Processor** (`batch-gateway-processor`) — Pulls jobs from a priority queue, builds per-model execution plans, dispatches inference requests to the inference gateway, and writes results.
-3. **Garbage Collector** (`batch-gateway-gc`) — Cleans up expired jobs and files.
+1. **API Server** — REST API server for batch job submission, management, tracking, and file management.
+2. **Batch Processor** — Pulls jobs from a priority queue, builds per-model execution plans, dispatches inference requests to the inference gateway, and writes results to output files.
+3. **Garbage Collector** — Cleans up expired jobs and files.
 
 ### Data Layer
 
@@ -25,8 +23,8 @@ Batch Gateway uses pluggable storage backends. Each function is backed by a sing
 
 | Function | Available plug-ins |
 |----------|-------------------|
-| Jobs and files metadata | PostgreSQL, Redis (development/test only) |
-| Priority queue, events, status updates | Redis |
+| Jobs and files metadata | PostgreSQL, Redis/Valkey (development/test only) |
+| Priority queue, events, status updates | Redis/Valkey |
 | File storage (input/output) | S3, Filesystem |
 
 ## Prerequisites
@@ -34,12 +32,12 @@ Batch Gateway uses pluggable storage backends. Each function is backed by a sing
 Before installing Batch Gateway, ensure you have:
 
 1. **Kubernetes cluster**: A running Kubernetes cluster (v1.25+).
-   - For local development, you can use **Kind** or **Minikube**.
-   - For production, GKE, AKS, or OpenShift are supported.
+   - For local development, you can use `Kind` or `Minikube`.
+   - For production, `OpenShift`, `GKE` or `AKS` are supported.
 2. **Helm**: 3.0+
-3. **llm-d Inference Stack**: Batch Gateway requires an existing [Intelligent Inference Scheduling](../inference-scheduling/README.md) stack to dispatch requests to.
-4. **PostgreSQL**: 12+ for metadata storage (Redis is available as an alternative for development/test only).
-5. **Redis**: 6+ for priority queue, events, and status updates.
+3. **llm-d Inference Stack**: Batch Gateway requires an existing [optimized baseline](../optimized-baseline/README.md) stack to dispatch requests to.
+4. **PostgreSQL**: 12+ for metadata storage. Redis/Valkey are available as an alternative for development/test only.
+5. **Redis/Valkey**: Redis 6+ or Valkey 8+ for priority queue, events, and status updates.
 6. **S3 or Filesystem**: For batch input and output file storage.
 
 ## Installation
@@ -97,6 +95,10 @@ helm install batch-gateway ./charts/batch-gateway \
 ```
 
 > **Note**: `passThroughHeaders` should include any authentication headers (e.g., `Authorization`) that the inference gateway expects. The processor forwards these headers when dispatching individual inference requests.
+
+## Detailed Deployment Guide
+
+For a production deployment with authentication, authorization, and TLS on Kubernetes, see the [Kubernetes deployment guide](https://github.com/llm-d-incubation/batch-gateway/blob/main/docs/guides/deploy-k8s.md) (Istio + Kuadrant + cert-manager).
 
 ## Verification
 
@@ -172,15 +174,7 @@ helm uninstall batch-gateway -n ${NAMESPACE}
 kubectl delete namespace ${NAMESPACE}
 ```
 
-## Platform-Specific Deployment Guides
-
-For production deployments with authentication, authorization, and TLS, see the detailed guides in the [batch-gateway repository](https://github.com/llm-d-incubation/batch-gateway/tree/main/docs/guides):
-
-- [Vanilla Kubernetes](https://github.com/llm-d-incubation/batch-gateway/blob/main/docs/guides/deploy-k8s.md) — Istio + Kuadrant + cert-manager
-- [Red Hat OpenShift AI (RHOAI)](https://github.com/llm-d-incubation/batch-gateway/blob/main/docs/guides/deploy-rhoai.md) — OpenShift + RHOAI operator
-- [Models-as-a-Service (MaaS)](https://github.com/llm-d-incubation/batch-gateway/blob/main/docs/guides/deploy-maas.md) — MaaS platform with API key auth
-
 ## Related
 
 - [Batch Gateway Repository](https://github.com/llm-d-incubation/batch-gateway) — source code, Helm chart, and detailed documentation.
-- [Asynchronous Processing](../asynchronous-processing/README.md) — queue-based async inference for individual requests (complementary to Batch Gateway's job-oriented API).
+- [Asynchronous Processing](../asynchronous-processing/README.md) — queue-based asynchronous inference for individual requests (complementary to Batch Gateway's job-oriented API).
