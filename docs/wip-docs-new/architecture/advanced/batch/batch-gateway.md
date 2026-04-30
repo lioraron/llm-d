@@ -1,6 +1,6 @@
 # Batch Gateway Architecture
 
-Batch Gateway adds OpenAI-compatible batch inference processing to the llm-d stack. It sits between batch API clients and the inference gateway, managing the lifecycle of batch jobs — from job creation through request dispatching to result collection.
+Batch Gateway adds OpenAI-compatible batch inference processing to the llm-d stack. It sits between batch API clients and the llm-d Router, managing the lifecycle of batch jobs — from job creation through request dispatching to result collection.
 
 ![Batch Gateway Architecture](../../../../assets/batch-gateway.svg)
 
@@ -26,13 +26,13 @@ The processor is the core execution engine. It:
 
 1. **Polls** the priority queue for the next job.
 2. **Ingests** the input file — parses model IDs and system prompts, groups requests by model, and builds per-model execution plans.
-3. **Executes** plans concurrently — launches per-model goroutines, sends individual inference requests to the inference gateway with concurrency limits, and writes results to an output file.
+3. **Executes** plans concurrently — launches per-model goroutines, sends individual inference requests to the llm-d Router with concurrency limits, and writes results to an output file.
 4. **Updates** the job status during processing, and listens to job events, such as cancellation.
 5. **Finalizes** — uploads the output file and updates the job status.
 
 ### Concurrency Control
 
-The processor uses two-level concurrency control to prevent overloading the inference gateway:
+The processor uses two-level concurrency control to prevent overloading the llm-d Router:
 
 - **Global concurrency** — caps total in-flight requests across all models.
 - **Per-model concurrency** — caps in-flight requests to a single model.
@@ -68,7 +68,7 @@ Batch Gateway delegates authentication and authorization to the upstream gateway
 
 - The API server extracts a tenant identifier from an HTTP header (configurable).
 - All data queries are filtered by tenant ID. Cross-tenant access is rejected.
-- The processor forwards configurable pass-through headers with each inference request, so the inference gateway can authenticate and authorize the end user per-request.
+- The processor forwards configurable pass-through headers with each inference request, so the llm-d Router can authenticate and authorize the end user per-request.
 - File paths are hashed by tenant ID to prevent enumeration.
 
 The batch route authenticates (verifying identity), while the inference route authorizes (verifying model access). This separation ensures that batch job creation doesn't require per-model permissions — authorization is enforced at inference time.
@@ -76,7 +76,7 @@ The batch route authenticates (verifying identity), while the inference route au
 ## Observability
 
 - **Prometheus metrics**: request counts, job processing times, queue wait duration, worker utilization, per-model concurrency, and token counts.
-- **OpenTelemetry tracing**: distributed traces across API server, processor, database, and inference gateway calls.
+- **OpenTelemetry tracing**: distributed traces across API server, processor, database, and llm-d Router calls.
 - **Grafana dashboards**: pre-built dashboards for API server and processor metrics, included in the Helm chart.
 - **Prometheus alerting rules**: configurable alerts for high queue wait time, job failure rate, expired jobs, and worker saturation.
 

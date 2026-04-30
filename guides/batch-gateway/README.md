@@ -14,7 +14,7 @@
 ### Components
 
 1. **API Server** — REST API server for batch job submission, management, tracking, and file management.
-2. **Batch Processor** — Pulls jobs from a priority queue, builds per-model execution plans, dispatches inference requests to the inference gateway, and writes results to output files.
+2. **Batch Processor** — Pulls jobs from a priority queue, builds per-model execution plans, dispatches inference requests to the llm-d Router, and writes results to output files.
 3. **Garbage Collector** — Cleans up expired jobs and files.
 
 ### Storage Layer
@@ -60,7 +60,7 @@ kubectl create secret generic batch-gateway-secrets -n ${NAMESPACE} \
   --from-literal=s3-secret-access-key="<your-s3-secret-key>"
 ```
 
-### Step 3: Configure the Inference Gateway URL
+### Step 3: Configure the llm-d Router URL
 
 The Batch Processor needs to know where to send inference requests. This is configured via the `processor.config.globalInferenceGateway.url` Helm value, or per-model via `processor.config.modelGateways`.
 
@@ -94,7 +94,7 @@ helm install batch-gateway ./charts/batch-gateway \
   --set global.fileClient.fs.pvcName="batch-gateway-pvc"
 ```
 
-> **Note**: `passThroughHeaders` should include any authentication headers (e.g., `Authorization`) that the inference gateway expects. The processor forwards these headers when dispatching individual inference requests.
+> **Note**: `passThroughHeaders` should include any authentication headers (e.g., `Authorization`) that the llm-d Router expects. The processor forwards these headers when dispatching individual inference requests.
 
 ## Detailed Deployment Guide
 

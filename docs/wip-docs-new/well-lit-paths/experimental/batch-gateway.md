@@ -11,7 +11,7 @@ Process large-scale batch inference jobs via an OpenAI-compatible API, enabling 
 
 ## Prerequisites
 
-- A working Inference Gateway, inference pool, and at least one model server. If you don't have this, start with [getting-started/quickstart.md](../../getting-started/quickstart.md).
+- A working llm-d Router, inference pool, and at least one model server. If you don't have this, start with [getting-started/quickstart.md](../../getting-started/quickstart.md).
 - PostgreSQL (12+) and Redis (6+) or Valkey (8+) accessible from the cluster.
 - S3-compatible storage or a shared PVC with `ReadWriteMany` (RWX) access mode for batch input/output files.
 - Helm 3.0+.

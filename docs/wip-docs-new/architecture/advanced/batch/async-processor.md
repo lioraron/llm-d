@@ -1,12 +1,12 @@
 # Async Processor Architecture
 
-The Async Processor is a lightweight dispatch agent that pulls inference requests from message queues and forwards them to the Inference Gateway. It uses dispatch gates to regulate dispatch rate based on system metrics, ensuring that the dispatched workloads don't overflow the inference servers.
+The Async Processor is a lightweight dispatch agent that pulls inference requests from message queues and forwards them to the llm-d Router. It uses dispatch gates to regulate dispatch rate based on system metrics, ensuring that the dispatched workloads don't overflow the inference servers.
 
 ## How It Works
 
 1. **Poll** — workers pull requests from one or more message queues.
 2. **Gate** — before dispatching, each request passes through a dispatch gate that checks whether the system has capacity. If the gate is closed (budget = 0), the request waits.
-3. **Dispatch** — the worker sends an HTTP request to the Inference Gateway with deadline propagation.
+3. **Dispatch** — the worker sends an HTTP request to the llm-d Router with deadline propagation.
 4. **Result** — on success, results are written back to a queue. On retryable failure (rate limiting, transient errors), the request is re-queued with exponential backoff.
 
 ## Dispatch Gates
