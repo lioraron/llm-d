@@ -1,211 +1,98 @@
 # Quickstart
 
-This is a quickstart for deploying a "hello, world" llm-d deployment with a **standalone proxy**.
+This guide provides a simplified, end-to-end walkthrough for deploying an **Optimized Baseline** configuration using llm-d. This setup reduces tail latency and increases throughput through load-aware and prefix-cache aware balancing.
 
-> [!NOTE]
-> Looking for production deployment with a Gateway API instead? See the [Gateway Configuration Guide](XXXX) for more details.
-
-## Request Flow
-
-In the llm-d architecture, requests flow in the following way:
-- Client sends a request (e.g. `/v1/chat/completions`) to the proxy
-- The proxy queries the EndpointPicker which selects the optimal replica to process the request from the InferencePool. In the standalone mode, the proxy and the EPP are running as two containers inside one Kubernetes Pod. In the Gateway mode, the EPP runs independently from the proxy (aka the Gateway).
-- The proxy sends the request to the vLLM pod in the InferencePool, which processes the query
-
-```
-        ┌─────────┐
-        │ Client  │
-        └────┬────┘
-             │
-             ▼     
-        ┌─────────┐      ┌─────┐
-        │  Proxy  │◄────►│ EPP │
-        └────┬────┘      └─────┘
-             │           
-             ▼
-  ┌────────────────────────────────┐
-  │  ┌──────┐ ┌──────┐   ┌──────┐  │ 
-  │  │ vLLM │ │ vLLM │...│ vLLM │  │
-  │  └──────┘ └──────┘   └──────┘  │
-  └────────────────────────────────┘
-```
+For this quickstart, we will use the **Standalone Mode** deployment, which is the easiest way to get started with llm-d.
 
 ## Prerequisites
 
-A Kubernetes cluster with:
-- Support for one of the three most recent Kubernetes minor [releases](https://kubernetes.io/releases/).
-- [Helm](https://helm.sh/docs/intro/install/)
-- [jq](https://jqlang.org/download/)
+- Ensure you have a Kubernetes cluster and `kubectl` configured.
+- Install [Helm](https://helm.sh/docs/intro/install/).
+- Install [jq](https://jqlang.org/download/).
 
-> [!NOTE]
-> The example below uses a NVIDIA GPU deployment for vLLM, but you can leverage the vLLM Simulator (`ghcr.io/llm-d/llm-d-inference-sim:latest`) for basic CPU based testing.
+### 1. Setup Environment
 
-## Install
-
-llm-d leverages the APIs defined by Gateway API Inference Extension. Install them:
+Clone the llm-d repository and set up the necessary environment variables:
 
 ```bash
-kubectl apply -k https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd
+git clone https://github.com/llm-d/llm-d.git && cd llm-d
+
+export GAIE_VERSION=v1.4.0
+export GUIDE_NAME="quickstart"
+export NAMESPACE=llm-d-quickstart
 ```
 
-## Deploy
+### 2. Install CRDs and Namespace
 
-First, deploy the llm-d router, you need one per InferencePool:
+Install the Gateway API Inference Extension CRDs and create the namespace:
 
 ```bash
-export STANDALONE_CHART_VERSION=v0
-
-helm install my-inference-pool \
-  --dependency-update \
-  --set inferencePool.modelServers.matchLabels.app=my-model \
-  --version $STANDALONE_CHART_VERSION \
-  oci://us-central1-docker.pkg.dev/k8s-staging-images/gateway-api-inference-extension/charts/standalone
+kubectl apply -k "https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd?ref=${GAIE_VERSION}"
+kubectl create namespace ${NAMESPACE}
 ```
 
-- The llm-d router for a pool named `my-inference-pool` is deployed and will add all pods with labels `app=my-model`.
-- The EPP is deployed with the default configuration (which uses prefix-cache aware and load-aware balancing).
-- The Proxy is deployed as a sidecar in the EPP pod.
+## Installation
 
-Verify the resources were created:
+### 1. Deploy the llm-d Router (Standalone Mode)
+
+The llm-d Router provides the intelligent load balancing. In Standalone Mode, it includes a built-in proxy (Envoy).
 
 ```bash
-kubectl get pods,svc,inferencepool
+helm install ${GUIDE_NAME} \
+    oci://registry.k8s.io/gateway-api-inference-extension/charts/standalone \
+    -f guides/recipes/scheduler/base.values.yaml \
+    -f guides/optimized-baseline/scheduler/optimized-baseline.values.yaml \
+    -n ${NAMESPACE} --version ${GAIE_VERSION}
 ```
 
-Expected output:
+### 2. Deploy the Model Server
 
-```
-NAME                                        READY   STATUS    RESTARTS   AGE
-pod/my-inference-pool-epp-f7c47758d-tblr4   2/2     Running   0          21s
-
-NAME                            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                      AGE
-service/my-inference-pool-epp   ClusterIP   10.16.2.57   <none>        9002/TCP,9090/TCP,8081/TCP   21s
-
-NAME                                                          AGE
-inferencepool.inference.networking.k8s.io/my-inference-pool   21s
-```
-
-Next, create the model servers Deployment (in this case, 2 replicas of vLLM running `openai/gpt-oss-20b`):
+Deploy the default model server (vLLM running on NVIDIA GPUs). This will deploy 8 replicas of `Qwen/Qwen3-32B` by default.
 
 ```bash
-kubectl apply -f - <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: my-model
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      # Used by the InferencePool for service discovery
-      app: my-model
-  template:
-    metadata:
-      labels:
-        app: my-model
-        # Used by the InferencePool for selecting the metrics mapping
-        inference.networking.k8s.io/engine-type: vllm
-    spec:
-      containers:
-        - name: vllm
-          image: "vllm/vllm-openai:latest"
-          imagePullPolicy: Always
-          command: ["vllm", "serve", "openai/gpt-oss-20b"]
-          ports:
-            - containerPort: 8000
-              name: http
-              protocol: TCP
-          resources:
-            limits:
-              nvidia.com/gpu: 1
-              ephemeral-storage: "100Gi"
-            requests:
-              nvidia.com/gpu: 1
-              ephemeral-storage: "100Gi"
-EOF
+kubectl apply -n ${NAMESPACE} -k guides/optimized-baseline/modelserver/gpu/vllm/
 ```
 
-- A deployment with 2 replicas of vLLM is created
-- The model servers pods are automatically discovered by the EPP via the `app:my-model` selector.
+> [!TIP]
+> If you are using different hardware (AMD, Intel, TPU, or CPU), you can find alternative configurations in the `guides/optimized-baseline/modelserver/` directory.
 
-Verify the model server pods are running and discovered by the InferencePool:
+## Verification
+
+### 1. Get the IP of the Proxy
+
+Retrieve the ClusterIP of the llm-d Router service:
 
 ```bash
-kubectl get pods -l app=my-model
+export IP=$(kubectl get service ${GUIDE_NAME}-epp -n ${NAMESPACE} -o jsonpath='{.spec.clusterIP}')
 ```
 
-Expected output:
+### 2. Send a Test Request
 
-```
-NAME                        READY   STATUS    RESTARTS   AGE
-my-model-667dcf89f5-c4swt   1/1     Running   0          20s
-my-model-667dcf89f5-tkzgh   1/1     Running   0          20s
-```
-
-
-## Make a Request
-
-Install the curl pod.
+Open a temporary interactive shell inside the cluster to send a request:
 
 ```bash
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Pod
-metadata:
-  name: curl
-  labels:
-    app: curl
-spec:
-  containers:
-  - name: curl
-    image: curlimages/curl:7.83.1
-    imagePullPolicy: IfNotPresent
-    command:
-      - tail
-      - -f
-      - /dev/null
-  restartPolicy: Never
-EOF
+kubectl run curl-debug --rm -it -n ${NAMESPACE} \
+    --image=cfmanteiga/alpine-bash-curl-jq \
+    --env="IP=$IP" \
+    -- /bin/bash
 ```
 
-Send an inference request:
+Inside the shell, send a completion request:
 
 ```bash
-kubectl exec curl -- curl -s http://my-inference-pool-epp:8081/v1/chat/completions \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "openai/gpt-oss-20b",
-    "messages": [{"role": "user", "content": "Hello, who are you?"}],
-    "max_tokens": 50
-  }'
-```
-
-Expected output:
-
-```json
-{
-  "id": "chatcmpl-...",
-  "model": "openai/gpt-oss-20b",
-  "choices": [
-    {
-      "index": 0,
-      "finish_reason": "stop",
-      "message": {
-        "role": "assistant",
-        "content": "..."
-      }
-    }
-  ]
-}
+curl -X POST http://${IP}/v1/completions \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "model": "Qwen/Qwen3-32B",
+        "prompt": "How are you today?"
+    }' | jq
 ```
 
 ## Cleanup
 
-Run the following commands to remove all resources created by this guide.
+To remove all resources created in this guide:
 
 ```bash
-helm uninstall my-inference-pool
-kubectl delete deployments my-model
-kubectl delete -k https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd --ignore-not-found
-kubectl delete pod curl --ignore-not-found
+helm uninstall ${GUIDE_NAME} -n ${NAMESPACE}
+kubectl delete namespace ${NAMESPACE}
 ```

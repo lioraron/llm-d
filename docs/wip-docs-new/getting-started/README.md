@@ -14,7 +14,11 @@ llm-d is a [CNCF sandbox project](https://www.cncf.io/) that supports multiple i
 
 ### Kubernetes-Native
 
-llm-d integrates with standard Kubernetes primitives — Gateway API, Custom Resources, Labels, and HPA — rather than introducing new orchestration layers or CRDs. If you already run workloads on Kubernetes, llm-d fits naturally into your infrastructure.
+llm-d integrates with standard Kubernetes primitives — Gateway API, Custom Resources, Labels, and HPA. If you already run workloads on Kubernetes, llm-d fits naturally into your infrastructure.
+
+### Composable and Incremental Adoption
+
+While llm-d offers a comprehensive suite of state-of-the-art optimizations, its architecture is fundamentally composable. You do not need to "buy into" the entire stack to benefit from individual features. Whether you only need intelligent, prefix-aware load balancing for an existing pool of model servers, or you want to layer in disaggregated serving and proactive autoscaling, llm-d allows you to incrementally adopt specific capabilities that solve your immediate production bottlenecks.
 
 ## Key Capabilities
 
@@ -48,9 +52,33 @@ Split inference into dedicated **prefill workers** (prompt processing) and **dec
 
 An **llm-d Router** capability implemented primarily as an EPP plugin that routes each request to the replica predicted to serve it fastest, using an XGBoost model trained online on live traffic to predict ITL and TTFT. Optionally enforce per-request SLOs via `x-slo-ttft-ms` / `x-slo-tpot-ms` headers — requests that no replica can meet within budget are shed at admission rather than routed to a guaranteed miss. Useful when workload variance makes queue-depth a poor proxy for true load, or when clients need to express interactive vs. batch latency budgets.
 
+### Batch Inference
+
+Manage high-volume offline inference workloads through OpenAI-compatible Batch APIs. llm-d provides two primary components for batch processing:
+- **llm-d Batch Gateway** — Provides `/v1/batches` and `/v1/files` endpoints for job submission and tracking.
+- **llm-d Async Processor** — A dispatch agent that pulls requests from message queues (such as Redis and Google Pub/Sub) and feeds them to the llm-d Router with system-aware flow control to prevent impacting interactive traffic.
+
+### Flow Control
+
+The **llm-d Router** implements sophisticated flow control to protect the inference pool from saturation and ensure fair resource sharing across tenants. By shifting queuing from isolated model server queues to a centralized, policy-aware buffer in the EPP, llm-d provides:
+
+- **Multi-Tenant Fairness** — Prevents "noisy neighbors" from monopolizing GPU capacity by enforcing fairness policies (e.g., Round-Robin) across different tenant IDs.
+- **Strict Priority Dispatch** — Ensures that high-priority interactive requests are always serviced before lower-priority background tasks, even during periods of heavy load.
+- **Late-Binding Scheduling** — Delays routing decisions until the moment capacity becomes available, ensuring requests are matched to the best possible replica (e.g., one with the highest prefix-cache affinity).
+- **Proactive SLO Guardrails** — Optionally rejects or sheds traffic that cannot meet latency targets, protecting the Quality of Service (QoS) for admitted requests.
+
+This centralized queuing model also provides a definitive "True Demand" metric, enabling more proactive and accurate autoscaling than traditional GPU utilization metrics alone.
+
 ### Wide Expert-Parallelism
 
 Deploy large Mixture-of-Experts models like DeepSeek-R1 across multiple nodes using combined Data Parallelism and Expert Parallelism deployments. This deployment pattern maximizes KV cache space for large models, enabling long-context online serving and high-throughput generation for batch and RL use cases.
+
+### Workload APIs for Multi-Node Serving
+
+The project drives the evolution of multi-node and disaggregated workload orchestration via Kubernetes-native APIs that simplify the management of complex, multi-container inference workloads:
+
+- **LeaderWorkerSet (LWS)** — Optimized for multi-node distributed inference (e.g., Wide Expert Parallelism). It manages a group of pods as a single logical unit, where a "leader" pod coordinates one or more "worker" pods, providing common network identity and lifecycle management for collective operations.
+- **DisaggregatedSet** — Specifically designed for disaggregated serving architectures. It manages the lifecycle and scaling of heterogeneous component sets (like Prefill and Decode server pods) that must work together, ensuring that related resources are provisioned and connected efficiently.
 
 ### Workload Autoscaling
 
@@ -61,19 +89,16 @@ Two complementary autoscaling patterns:
 
 ## Architecture at a Glance
 
-llm-d uses a layered, composable architecture centered around the **llm-d Router**.
+llm-d uses a layered, composable architecture. See the [Architecture Overview](../architecture/README.md) for a deeper dive into the architecture.
 
 <p align="center">
-  <img src="../../assets/basic-architecture.svg" width="600" alt="Architecture">
+  <picture>
+    <source media="(prefers-color-scheme: dark)">
+    <img alt="llm-d Arch" src="../../assets/images/llm-d-arch.svg" width=95%>
+  </picture>
 </p>
 
-| Component | Role |
-|---|---|
-| **[llm-d Router](../architecture/core/router/README.md)** | The intelligent request gateway. It is composed of a **Proxy** (Envoy) and the **Endpoint Picker (EPP)**. The Router makes model-aware routing decisions, manages flow control, and enforces request-level policies. |
-| **[InferencePool](../architecture/core/inferencepool.md)** | A Kubernetes Custom Resource that groups model server pods and defines how the Router discovers and interacts with them. |
-| **[Model Servers](../architecture/core/model-servers.md)** | vLLM or SGLang instances running models on accelerators. |
 
-See the [Architecture Overview](../architecture/README.md) for a deeper dive into the architecture.
 
 ## Well-Lit Paths
 
