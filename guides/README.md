@@ -2,6 +2,9 @@
 
 Our well-lit path guides are documented, tested, and benchmarked recipes to serve LLMs with best-practices for high performance.
 
+> [!IMPORTANT]
+> These guides are intended to be a starting point for your own configuration and deployment of model servers. Our manifests provide basic reusable building blocks for vLLM deployments and llm-d router configuration within these guides but will not support the full range of all possible configurations.
+
 We currently offer the following:
 
 ### Intelligent Routing
@@ -23,9 +26,6 @@ We currently offer the following:
 
 * [Flow Control](./flow-control.md): Intelligent request queuing for multi-tenant deployments and managing traffic spikes.
 * [Workload Autoscaling](./workload-autoscaling/README.md) - autoscale the LLM service via proactive, SLO-aware signals that reflect the true state of the inference system — queue depth, in-flight request counts, and KV cache pressure — so that capacity can be added before end-user latency is impacted.
-
-> [!IMPORTANT]
-> These guides are intended to be a starting point for your own configuration and deployment of model servers. Our manifests provide basic reusable building blocks for vLLM deployments and llm-d router configuration within these guides but will not support the full range of all possible configurations.
 
 ## Experimental Guides
 
