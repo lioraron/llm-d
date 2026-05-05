@@ -6,8 +6,16 @@ The **llm-d Router** is the intelligent entry point for inference requests in th
 
 The llm-d Router is composed of two primary functional parts:
 
-1.  **Proxy**: Any conformant industry-grade L7 proxy (typically [Envoy](proxy.md)). The proxy handles the data plane, including connection management, TLS termination, and request forwarding.
-2.  **Endpoint Picker (EPP)**: A specialized service that the proxy consults for every request. The [EPP](epp/README.md) contains the routing "intelligence," using real-time signals from model servers to make optimal placement decisions.
+### Proxy 
+Any conformant industry-grade L7 proxy (typically Envoy). The proxy handles the data plane, including connection management, TLS termination, and request forwarding.
+
+See the [**Proxy deep dive**](proxy.md) to learn about deployment modes (Standalone vs. Gateway Mode), request flow, and Gateway API integration.
+
+### llm-d Endpoint Picker (EPP) 
+
+A specialized service that the proxy consults for every request. The [EPP](epp/README.md) contains the routing "intelligence," using real-time signals from model servers to make optimal placement decisions.
+
+See the [**llm-d EPP deep dive**](epp/README.md) to learn about the the routing engine's architecture, plugin pipeline (Filters, Scorers, Pickers), and flow control mechanisms.
 
 ## How it Works
 
@@ -17,10 +25,5 @@ The EPP evaluates the request against the current state of the [InferencePool](.
 
 This decoupled architecture allows llm-d to leverage the performance and reliability of production-grade proxies while providing a highly extensible framework for LLM-specific routing logic.
 
-## Deep Dive
 
-For more detailed information on the individual components of the llm-d Router, see:
-
-- [**Proxy**](proxy.md): Learn about deployment modes (Standalone vs. Gateway Mode), request flow, and Gateway API integration.
-- [**Endpoint Picker (EPP)**](epp/README.md): Explore the routing engine's architecture, plugin pipeline (Filters, Scorers, Pickers), and flow control mechanisms.
 

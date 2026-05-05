@@ -56,3 +56,8 @@ llm-d supports proactive, SLO-aware autoscaling through two complementary approa
 - **Workload Variant Autoscaler (WVA)**: Globally optimized scaling that minimizes cost by routing traffic across different model variants (e.g., different hardware or quantization) while meeting latency targets.
 
 See [Autoscaling](advanced/autoscaling/README.md) for complete details.
+
+<p align="center">
+  <img src="../assets/images/llm-d-arch.svg" width="800" alt="Architecture">
+</p>
+

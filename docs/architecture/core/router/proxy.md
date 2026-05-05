@@ -44,7 +44,7 @@ In standalone mode, the conformant proxy (e.g., Envoy) runs alongside the EPP in
 - **Access**: Traffic is sent directly to the EPP pod's externally exposed port.
 
 <p align="center">
-  <img src="../../../assets/standalone-design.svg" width="540" alt="Standalone Design">
+  <img src="../../../assets/standalone-design.svg" width="700" alt="Standalone Design">
 </p>
 
 ---
@@ -65,7 +65,7 @@ Gateway Mode is targeted at production environments that require:
 The [Gateway API Inference Extension (GAIE)](https://gateway-api-inference-extension.sigs.k8s.io/) extends Gateway API by leveraging Envoy's External Processing to inject LLM-aware load balancing into the production-grade networking provided by the Gateway provider.
 
 <p align="center">
-  <img src="../../../assets/gateway-design.svg" width="605" alt="Gateway Design">
+  <img src="../../../assets/gateway-design.svg" width="700" alt="Gateway Design">
 </p>
 
 To connect an **InferencePool** (and the EPP it selects) to a **Gateway**, you use an **HTTPRoute** that references the pool as its backend. One of the powerful features of Gateway Mode is the ability to host complex routing topologies: a single `Gateway` can host multiple `HTTPRoute` objects, and each route can be configured with multiple **InferencePool** backends (e.g., for canary rollouts or traffic splitting) or a standard Kubernetes **Service**.
@@ -148,7 +148,7 @@ spec:
 </table>
 
 ### Deployment Guides
-llm-d provides [Gateway Mode deployment guides](../../../well-lit-paths/README.md) for the following Gateways:
+llm-d provides [Gateway Mode deployment guides](https://github.com/llm-d/llm-d/blob/main/guides/prereq/gateways/README.md) for the following Gateways:
 - [Istio](https://github.com/llm-d/llm-d/blob/main/guides/prereq/gateways/istio.md)
 - [GKE Gateway](https://github.com/llm-d/llm-d/blob/main/guides/prereq/gateways/gke.md)
 - [Agentgateway](https://github.com/llm-d/llm-d/blob/main/guides/prereq/gateways/agentgateway.md)
