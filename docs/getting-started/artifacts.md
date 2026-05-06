@@ -88,7 +88,7 @@ are tested and supported versions for the v0.7.0 release.
 
 ## Key Upstream Dependencies
 
-Exact versions pinned in the v0.7.0 container images. See [upstream-versions.md](https://github.com/llm-d/llm-d/blob/main/docs/upstream-versions.md) for the authoritative source.
+Exact versions pinned in the v0.7.0 container images. See [upstream-versions.md](../upstream-versions.md) for the authoritative source.
 
 | Dependency | Pinned Version (v0.7.0) | Purpose |
 |------------|---------|---------|

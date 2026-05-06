@@ -309,7 +309,7 @@ For detailed instructions on how to derive the optimal `maxConcurrency` for your
 
 ## Observability
 
-The Flow Control layer exposes detailed metrics to track queuing dynamics. Please refer to [flow control architecture](https://github.com/llm-d/llm-d/blob/main/docs/architecture/core/router/epp/flow-control.md) for more details.
+The Flow Control layer exposes detailed metrics to track queuing dynamics. Please refer to [flow control architecture](../../docs/architecture/core/router/epp/flow-control.md) for more details.
 
 ## Cleanup
 
