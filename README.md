@@ -54,7 +54,7 @@ llm-d accelerates distributed inference by integrating industry-standard open te
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)">
-    <img alt="llm-d Arch" src="./docs/assets/images/llm-d-arch.svg" width=95%>
+    <img alt="llm-d Arch" src="./docs/assets/images/llm-d-arch.svg">
   </picture>
 </p>
 

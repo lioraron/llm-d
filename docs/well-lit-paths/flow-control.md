@@ -49,7 +49,12 @@ For detailed step-by-step instructions on how to deploy and configure Flow Contr
 
 ## Architecture
 
-![Flow Control](../assets/flow-control.svg)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)">
+    <img src="../assets/flow-control.svg" alt="Flow Control">
+  </picture>
+</p>
 
 Requests arrive to the proxy with headers expressing their tenant ID and traffic priority. EPP leverages these headers to assign a `FlowKey` (tuple of `FairnessID` and `Priority`) to each request and maintains separate in-memory queues for each `FlowKey`. Each `FlowKey` is assigned to a `PriorityBand` (for cases when multiple tenants have the same priority).
 

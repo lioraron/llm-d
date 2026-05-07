@@ -27,7 +27,7 @@ llm-d uses a layered, composable architecture. See the [Architecture Overview](.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)">
-    <img alt="llm-d Arch" src="../assets/images/llm-d-arch.svg" width="95%" />
+    <img alt="llm-d Arch" src="../assets/images/llm-d-arch.svg" />
   </picture>
 </p>
 

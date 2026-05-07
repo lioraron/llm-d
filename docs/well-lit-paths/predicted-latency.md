@@ -16,7 +16,12 @@ See the [Predicted Latency guide](../../guides/predicted-latency-based-schedulin
 
 ## Architecture
 
-![Latency Predictor](../assets/latency-predictor.svg)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)">
+    <img src="../assets/latency-predictor.svg" alt="Latency Predictor">
+  </picture>
+</p>
 
 The setup deploys an EPP with the predicted latency sidecar containers:
 * **Training Server** - trains the XGBoost model to predict TPOT and TTFT based on observed traffic

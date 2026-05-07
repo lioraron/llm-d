@@ -15,7 +15,10 @@ The llm-d architecture is built around three primary concepts: the [Router](core
 - **[Model Server](core/model-servers.md)** - The inference engine (such as vLLM or SGLang) that executes the model on hardware accelerators (GPUs, TPUs, HPUs).
 
 <p align="center">
-  <img src="../assets/basic-architecture.svg" width="660" alt="Architecture">
+  <picture>
+    <source media="(prefers-color-scheme: dark)">
+    <img alt="Basic llm-d Arch" src="../assets/basic-architecture.svg" />
+  </picture>
 </p>
 
 ## Advanced Patterns
@@ -58,6 +61,8 @@ llm-d supports proactive, SLO-aware autoscaling through two complementary approa
 See [Autoscaling](advanced/autoscaling/README.md) for complete details.
 
 <p align="center">
-  <img src="../assets/images/llm-d-arch.svg" width="800" alt="Architecture">
+  <picture>
+    <source media="(prefers-color-scheme: dark)">
+    <img alt="Advanced llm-d Arch" src="../assets/images/llm-d-arch.svg" />
+  </picture>
 </p>
-
