@@ -1,19 +1,19 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ../../../../recipes/modelserver/base/single-host/default
+  - ../../../../../recipes/modelserver/base/single-host/default
 
-namePrefix: optimized-baseline-nvidia-gpu-sglang-
+namePrefix: optimized-baseline-nvidia-gpu-vllm-
 
 images:
   - name: REPLACE_MODEL_SERVER_IMAGE
-    newName: docker.io/lmsysorg/sglang
-    newTag: v0.5.10.post1
+    newName: vllm/vllm-openai
+    newTag: v0.19.1
 
 labels:
   - pairs:
-      llm-d.ai/guide: optimized-baseline
       llm-d.ai/model: Qwen3-32B
+      llm-d.ai/guide: optimized-baseline
       llm-d.ai/accelerator-variant: gpu
       llm-d.ai/accelerator-vendor: nvidia
     includeSelectors: true
@@ -48,6 +48,5 @@ labels:
         kind: PodMonitor
         path: spec/selector/matchLabels
         create: true
-
 patches:
-  - path: patch-sglang.yaml
+  - path: patch-vllm.yaml

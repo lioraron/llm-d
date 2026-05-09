@@ -69,7 +69,7 @@ This guide supports both GPU and TPU. GPU defaults to NVIDIA H100 and TPU defaul
 
 #### Standalone Mode
 
-This deploys the inference scheduler with an Envoy sidecar side-by-side. Default mode for standalone deployments:
+This deploys the llm-d Router with an Envoy sidecar side-by-side. Default mode for standalone deployments:
 
 ```bash
 helm install ${GUIDE_NAME} \
@@ -85,7 +85,7 @@ helm install ${GUIDE_NAME} \
 To use a Kubernetes Gateway managed proxy rather than the standalone version, follow these steps instead of applying the previous Helm chart:
 
 1. _Deploy a Kubernetes Gateway_ by following one of [the gateway guides](../../prereq/gateways).
-2. _Deploy the inference scheduler and an HTTPRoute_ connecting to the Gateway:
+2. _Deploy the llm-d Router and an HTTPRoute_ connecting to the Gateway:
 
 ```bash
 export PROVIDER_NAME=gke # options: none, gke, agentgateway, istio
@@ -105,16 +105,22 @@ helm install ${GUIDE_NAME} \
 
 ### 2. Deploy the Model Server
 
-Apply the Kustomize overlay setup matching your preferred offloading medium.
+Apply the Kustomize overlay setup matching your preferred offloading medium:
 
+**For NVIDIA GPU:**
 ```bash
-export ACCELERATOR=gpu # gpu|tpu-v7
-export CONNECTOR=offloading-connector # offloading-connector | lmcache-connector | tpu-offloading-connector
-kubectl apply -n ${NAMESPACE} -k guides/tiered-prefix-cache/cpu/modelserver/${ACCELERATOR}/vllm/${CONNECTOR}
+export CONNECTOR=offloading-connector # offloading-connector | lmcache-connector
+export INFRA_PROVIDER=base # base | gke
+kubectl apply -n ${NAMESPACE} -k guides/tiered-prefix-cache/cpu/modelserver/gpu/vllm/${CONNECTOR}/${INFRA_PROVIDER}/
+```
+
+**For Google TPU v7:**
+```bash
+kubectl apply -n ${NAMESPACE} -k guides/tiered-prefix-cache/cpu/modelserver/tpu-v7/vllm/tpu-offloading-connector/
 ```
 
 > [!NOTE]
-> To enable tiered prefix caching, we customize the `inferenceExtension` configuration. We configure two prefix cache scorers: one for the GPU/TPU cache and another for the CPU cache.
+> To enable tiered prefix caching, we customize the llm-d EPP configuration. We configure two prefix cache scorers: one for the GPU/TPU cache and another for the CPU cache.
 > LRU capacity for the CPU cache must be manually configured (`lruCapacityPerServer`) because vLLM currently does not emit CPU block metrics.
 
 ---
