@@ -31,7 +31,11 @@ spec:
             emptyDir: {}
         containers:
           - name: vllm
-            image: ghcr.io/llm-d/llm-d-cuda:v0.7.0
+            # image: ghcr.io/llm-d/llm-d-cuda-dev:sha-c1ef857
+            # image: ghcr.io/llm-d/llm-d-cuda-dev:sha-7e0df41
+            # image: ghcr.io/llm-d/llm-d-cuda-dev:sha-d163128
+            # image: ghcr.io/llm-d/llm-d-cuda-dev:sha-a63291a # working!
+            image: ghcr.io/llm-d/llm-d-cuda-dev:sha-ac9a0d7
             securityContext:
               capabilities:
                 add:
@@ -66,7 +70,9 @@ spec:
                   deepseek-ai/DeepSeek-R1-0528 \
                   --port 8000 \
                   --trust-remote-code \
-                  --disable-uvicorn-access-log \
+                  --gpu-memory-utilization 0.80 \
+                  --api-server-count 1 \
+                  --disable-access-log-for-endpoints=/health,/metrics \
                   --data-parallel-hybrid-lb \
                   --enable-expert-parallel \
                   --tensor-parallel-size $TP_SIZE \
@@ -78,7 +84,6 @@ spec:
                   --kv_transfer_config '{"kv_connector":"NixlConnector",
                                           "kv_role":"kv_both",
                                           "kv_load_failure_policy":"fail"}' \
-                  --async-scheduling \
                   --enable-dbo \
                   --dbo-prefill-token-threshold 32 \
                   --enable-eplb \
@@ -86,8 +91,8 @@ spec:
                                   "step_interval":"3000",
                                   "num_redundant_experts":"32",
                                   "log_balancedness":"False"}' \
+                  --moe-backend deep_gemm \
                   --all2all-backend deepep_high_throughput \
-                  --gpu-memory-utilization 0.75
                   # To enable tracing, add:
                   # --otlp-traces-endpoint http://otel-collector:4317 \
                   # --collect-detailed-traces all
@@ -101,6 +106,17 @@ spec:
               #   value: "parentbased_traceidratio"
               # - name: OTEL_TRACES_SAMPLER_ARG
               #   value: "0.1"
+              # NOTE: vllm/vllm-openai:v0.19.1 is a cu129 image but has 
+              # nixl-cu13 and nixl-cu12 installed, which causes NIXL to
+              # to pick up the wrong UCX library. If you are deploying
+              # a cu13 (e.g. vllm/vllm-openai:v0.19.1-x86_64-cu130), 
+              # comment out this path.
+              # - name: UCX_MODULE_DIR
+              #   value: /usr/local/lib/python3.12/dist-packages/nixl_cu12.libs/ucx
+              - name: VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS
+                value: "1"
+              - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
+                value: "1"
               - name: DP_SIZE_LOCAL
                 value: "8"
               - name: TP_SIZE
@@ -108,10 +124,6 @@ spec:
               - name: TRITON_LIBCUDA_PATH
                 value: /usr/lib64
               - name: VLLM_SKIP_P2P_CHECK
-                value: "1"
-              - name: VLLM_RANDOMIZE_DP_DUMMY_INPUTS
-                value: "1"
-              - name: VLLM_USE_DEEP_GEMM
                 value: "1"
               - name: NVIDIA_GDRCOPY
                 value: enabled
