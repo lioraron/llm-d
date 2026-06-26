@@ -16,6 +16,10 @@ Process large-scale batch inference jobs via an OpenAI-compatible API, enabling 
 - S3-compatible storage or a shared PVC with `ReadWriteMany` (RWX) access mode for batch input/output files.
 - Helm 3.0+.
 
+## Deploy
+
+See the [Batch Gateway guide](../../../../guides/batch-gateway) for manifests and step-by-step deployment.
+
 ## Related
 
 - [Batch Gateway Deployment Guide](../../../../guides/batch-gateway) — full deployment instructions, configuration options, and troubleshooting.
