@@ -18,7 +18,7 @@ Process large-scale batch inference jobs via an OpenAI-compatible API, enabling 
 
 ## Deploy
 
-See the [Batch Gateway guide](../../../../guides/batch-gateway) for manifests and step-by-step deployment.
+- [Batch Gateway Deployment Guide](../../../../guides/batch-gateway) — full deployment instructions, configuration options, and troubleshooting.
 
 ## Related
 
